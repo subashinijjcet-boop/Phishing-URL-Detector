@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Phishing URL Detector</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #1f4037, #99f2c8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .page {
+            display: none;
+            background: white;
+            padding: 30px;
+            width: 450px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        input {
+            width: 95%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            padding: 10px 15px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #1f4037;
+            color: white;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #14532d;
+        }
+
+        .logout {
+            background-color: red;
+            margin-top: 15px;
+        }
+
+        .result-container {
+            background: #f8f8f8;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: left;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+        }
+
+        .result-container h3 {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .result-container p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== LOGIN PAGE ===== -->
+<div id="loginPage" class="page active">
+    <h2>🔐 Login</h2>
+    <input type="text" id="username" placeholder="Enter Username">
+    <input type="password" id="password" placeholder="Enter Password">
+    <button onclick="login()">Login</button>
+</div>
+
+<!-- ===== DASHBOARD PAGE ===== -->
+<div id="dashboardPage" class="page">
+    <h2>🛡 Phishing URL Detector</h2>
+    <p>Welcome, <span id="userLabel"></span>!</p>
+
+    <input type="text" id="urlInput" placeholder="Enter Website URL">
+    <button id="checkBtn">Check URL</button>
+
+    <!-- Result Section -->
+    <div class="result-container" id="resultContainer" style="display:none;">
+        <h3>🔍 URL Analysis Result</h3>
+        <p><strong>URL:</strong> <span id="checkedURL"></span></p>
+        <p><strong>Status:</strong> <span id="urlStatus"></span></p>
+        <p><strong>Risk Score:</strong> <span id="riskScore"></span>%</p>
+        <p><strong>Reason:</strong> <span id="reason"></span></p>
+    </div>
+
+    <button class="logout" onclick="logout()">Logout</button>
+</div>
+
+<script>
+    // ===== LOGIN FUNCTION =====
+    function login() {
+        var username = document.getElementById("username").value.trim();
+        var password = document.getElementById("password").value.trim();
+
+        // Simple demo credentials
+        if(username === "admin" && password === "1234") {
+            document.getElementById("loginPage").classList.remove("active");
+            document.getElementById("dashboardPage").classList.add("active");
+            document.getElementById("userLabel").innerText = username;
+        } else {
+            alert("Invalid username or password!\nTry admin / 1234");
+        }
+    }
+
+    // ===== LOGOUT FUNCTION =====
+    function logout() {
+        document.getElementById("dashboardPage").classList.remove("active");
+        document.getElementById("loginPage").classList.add("active");
+        document.getElementById("username").value = "";
+        document.getElementById("password").value = "";
+        document.getElementById("urlInput").value = "";
+        document.getElementById("resultContainer").style.display = "none";
+    }
+
+    // ===== CHECK URL FUNCTION =====
+    function showResult(url) {
+        var score = 0;
+        var reasons = [];
+
+        if (url.includes("@")) {
+            score += 25;
+            reasons.push("Contains '@' symbol");
+        }
+
+        if (url.length > 75) {
+            score += 25;
+            reasons.push("URL is too long");
+        }
+
+        if (url.match(/\d+\.\d+\.\d+\.\d+/)) {
+            score += 25;
+            reasons.push("Contains IP address");
+        }
+
+        var suspiciousWords = ["login", "verify", "update", "bank"];
+        for (var i = 0; i < suspiciousWords.length; i++) {
+            if (url.toLowerCase().includes(suspiciousWords[i])) {
+                score += 25;
+                reasons.push("Contains suspicious keyword: " + suspiciousWords[i]);
+            }
+        }
+
+        var status = "";
+        var color = "";
+        if (score >= 50) {
+            status = "⚠ Phishing / Suspicious";
+            color = "red";
+        } else {
+            status = "✅ Legitimate";
+            color = "green";
+        }
+
+        // Show result
+        document.getElementById("resultContainer").style.display = "block";
+        document.getElementById("checkedURL").innerText = url;
+        document.getElementById("urlStatus").innerText = status;
+        document.getElementById("urlStatus").style.color = color;
+        document.getElementById("riskScore").innerText = score;
+        document.getElementById("reason").innerText = reasons.join(", ") || "None";
+    }
+
+    // Button event for checking URL
+    document.getElementById("checkBtn").addEventListener("click", function() {
+        var url = document.getElementById("urlInput").value.trim();
+        if(url) {
+            showResult(url);
+        } else {
+            alert("Please enter a URL!");
+        }
+    });
+</script>
+
+</body>
+</html>
